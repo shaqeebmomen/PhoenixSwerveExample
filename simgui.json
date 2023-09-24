@@ -9,6 +9,11 @@
       "window": {
         "visible": false
       }
+    },
+    "Timing": {
+      "window": {
+        "visible": false
+      }
     }
   },
   "NTProvider": {
@@ -21,6 +26,12 @@
       "/SmartDashboard/Field": {
         "Robot": {
           "style": "Box/Image"
+        },
+        "Waypoints": {
+          "arrows": false,
+          "length": 0.10000000149011612,
+          "weight": 1.0,
+          "width": 0.10000000149011612
         },
         "window": {
           "visible": true
@@ -51,16 +62,7 @@
       "open": true
     }
   },
-  "Plot": {
-    "Plot <0>": {
-      "plots": [
-        {
-          "height": 338
-        }
-      ],
-      "window": {
-        "visible": false
-      }
-    }
+  "NetworkTables View": {
+    "visible": false
   }
 }

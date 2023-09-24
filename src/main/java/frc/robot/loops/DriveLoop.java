@@ -4,9 +4,13 @@
 
 package frc.robot.loops;
 
+import java.util.List;
+
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -46,11 +50,11 @@ public class DriveLoop extends SubsystemBase {
   }
 
   private DriveLoop() {
+    SmartDashboard.putData(field2d);
     oi = OI.getInstance();
     mDriveState = DriveStates.DISABLED;
     mDrive = new Drive();
     mDrive.registerTelemetry(this::telemeterize);
-
   }
 
   public void setState(DriveStates state) {
@@ -113,7 +117,7 @@ public class DriveLoop extends SubsystemBase {
 
   private void telemeterize(SwerveDriveState state) {
     field2d.setRobotPose(state.Pose);
-    SmartDashboard.putData(field2d);
+    field2d.getObject("Waypoints").setPoses(new Pose2d(0., 0.,new Rotation2d()), new Pose2d(5, 3, new Rotation2d()));
   }
 
 }
