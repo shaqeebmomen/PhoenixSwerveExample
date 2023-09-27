@@ -25,7 +25,7 @@ public class MoveRamseteCommand extends CommandBase {
 
     drive.updateTrajectory("paths/output/test.wpilib.json");
     drive.setFixedAngle(new Rotation2d()); // Whatever end angle you want
-    drive.resetOdomFieldRelative(drive.getTrajectory().getInitialPose());
+    drive.resetOdomFieldRelative(new Pose2d(drive.getTrajectory().getInitialPose().getTranslation(), new Rotation2d()));
     drive.setState(DriveStates.RAMSETE);
   }
 

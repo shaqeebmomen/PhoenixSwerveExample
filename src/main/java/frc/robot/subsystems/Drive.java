@@ -55,7 +55,7 @@ public class Drive extends SwerveDrivetrain {
 
   private static final SwerveDrivetrainConstants DrivetrainConstants = new SwerveDrivetrainConstants()
       .withPigeon2Id(kPigeonId)
-      .withSupportsPro(true)
+      .withSupportsPro(false)
       .withCANbusName(kCANbusName);
 
   private static final SwerveModuleConstantsFactory ConstantCreator = new SwerveModuleConstantsFactory()
@@ -68,7 +68,8 @@ public class Drive extends SwerveDrivetrain {
       .withSpeedAt12VoltsMps(6) // Theoretical free speed is 10 meters per second at 12v applied output
       .withSteerInertia(kSteerInertia)
       .withDriveInertia(kDriveInertia)
-      .withFeedbackSource(SwerveModuleSteerFeedbackType.FusedCANcoder)
+      // .withFeedbackSource(SwerveModuleSteerFeedbackType.FusedCANcoder)
+      .withFeedbackSource(SwerveModuleSteerFeedbackType.RemoteCANcoder)
       .withCouplingGearRatio(kCoupleRatio) // Every 1 rotation of the azimuth results in couple ratio drive turns
       .withSteerMotorInverted(kSteerMotorReversed);
 

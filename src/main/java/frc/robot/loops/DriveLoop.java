@@ -149,8 +149,8 @@ public class DriveLoop extends SubsystemBase {
     cmdOmega = omega * DriveConstants.DRIVE_MAX_OMEGA
         * Preferences.getDouble("OPEN_LOOP_GAIN", 1);
 
-    SmartDashboard.putNumber("cmdX", cmdX);
-    SmartDashboard.putNumber("cmdY", cmdY);
+    SmartDashboard.putNumber("cmdVX", cmdX);
+    SmartDashboard.putNumber("cmdVY", cmdY);
     SmartDashboard.putNumber("cmdOmega", cmdOmega);
 
     double[] ret = { cmdX, cmdY, cmdOmega };
