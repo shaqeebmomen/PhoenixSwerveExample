@@ -55,7 +55,7 @@ public class Drive extends SwerveDrivetrain {
 
   private static final SwerveDrivetrainConstants DrivetrainConstants = new SwerveDrivetrainConstants()
       .withPigeon2Id(kPigeonId)
-      .withSupportsPro(false)
+      .withSupportsPro(true)
       .withCANbusName(kCANbusName);
 
   private static final SwerveModuleConstantsFactory ConstantCreator = new SwerveModuleConstantsFactory()
