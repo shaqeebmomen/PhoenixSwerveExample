@@ -10,12 +10,12 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.loops.DriveLoop;
 import frc.robot.loops.DriveLoop.DriveStates;
 
-public class MovePathRamsete extends CommandBase {
+public class MoveRamseteCommand extends CommandBase {
 
   private DriveLoop drive;
 
   /** Creates a new MovePathRamsete. */
-  public MovePathRamsete() {
+  public MoveRamseteCommand() {
     drive = DriveLoop.getInstance();
   }
 
@@ -23,9 +23,9 @@ public class MovePathRamsete extends CommandBase {
   @Override
   public void initialize() {
 
-    drive.updateTrajectory("paths/test.wpilib.json");
+    drive.updateTrajectory("paths/output/test.wpilib.json");
     drive.setFixedAngle(new Rotation2d()); // Whatever end angle you want
-    drive.resetOdomFieldRelative(new Pose2d(2, 5, new Rotation2d()));
+    drive.resetOdomFieldRelative(drive.getTrajectory().getInitialPose());
     drive.setState(DriveStates.RAMSETE);
   }
 

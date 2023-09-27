@@ -1,6 +1,7 @@
 package frc.robot.control;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -24,6 +25,8 @@ public class BigBirdRamsete {
     private double currentTime;
     private double tolerancePos = 0.05; // 5 cm
     private double toleranceRot = Units.degreesToRadians(1); // 1 deg
+    private double mB = 2.0;
+    private double mZ = 0.7;
 
     /**
      * initializes the trajectory, the b gain, and the zeta gain
@@ -34,6 +37,8 @@ public class BigBirdRamsete {
      */
     public BigBirdRamsete(Trajectory trajectory, double b, double zeta) {
         ramseteController = new RamseteController(b, zeta);
+        mB = b;
+        mZ = zeta;
         setTrajectory(trajectory);
         resetPath();
         timeSinceStart = 0;
@@ -118,7 +123,17 @@ public class BigBirdRamsete {
      * @param zeta
      */
     public void setBZeta(double b, double zeta) {
+        mB = b;
+        mZ = zeta;
         ramseteController = new RamseteController(b, zeta);
+    }
+
+    public double getB() {
+        return mB;
+    }
+
+    public double getZeta() {
+        return mZ;
     }
 
     // TODO this doesn't work if our path crosses over our final point, we need some

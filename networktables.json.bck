@@ -10,7 +10,7 @@
   {
     "name": "/Preferences/Ram_Zeta",
     "type": "double",
-    "value": 0.7,
+    "value": 1.0,
     "properties": {
       "persistent": true
     }

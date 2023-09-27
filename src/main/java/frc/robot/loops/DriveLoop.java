@@ -71,6 +71,7 @@ public class DriveLoop extends SubsystemBase {
 
   @Override
   public void periodic() {
+    telemInput();
     switch (mDriveState) {
       case OPERATOR_CONTROL:
         double commands[] = computeOperatorCommands(oi.getMappedDriveLeftY(), oi.getMappedDriveLeftX(),
@@ -84,7 +85,7 @@ public class DriveLoop extends SubsystemBase {
 
       case RAMSETE:
         ChassisSpeeds goalSpeeds = ramseteControl.getGoalSpeeds(currentPose); // Chassis speeds as dictated
-                                                                                    // by Ramsete
+                                                                              // by Ramsete
         /*
          * Keep in mind that the ramsete controller is for a uni-cycle model. In a
          * swerve's case we cannot apply the vx, vy & omega directly, as our heading
@@ -169,10 +170,23 @@ public class DriveLoop extends SubsystemBase {
     currentPose = state.Pose;
   }
 
+  private void telemInput() {
+    double teleB = Preferences.getDouble("Ram_B", 2.0);
+    double teleZ = Preferences.getDouble("Ram_Zeta", 0.7);
+    if (teleB != ramseteControl.getB() || teleZ != ramseteControl.getZeta()) {
+      ramseteControl.setBZeta(teleB, teleZ);
+      System.out.println("Updated Ramsete");
+    }
+  }
+
   public void updateTrajectory(String filename) {
     Trajectory newTrajectory = ramseteControl.readTrajectory(filename);
     ramseteControl.setTrajectory(newTrajectory);
     ramseteControl.resetPath();
+  }
+
+  public Trajectory getTrajectory() {
+    return ramseteControl.getCurrentTrajectory();
   }
 
   public void setFixedAngle(Rotation2d rot) {
@@ -185,6 +199,10 @@ public class DriveLoop extends SubsystemBase {
 
   public void resetOdomFieldRelative(Pose2d newPose) {
     mDrive.seedFieldRelative(newPose);
+  }
+
+  public void updateRamseteGains(double b, double zeta) {
+    ramseteControl.setBZeta(b, zeta);
   }
 
 }
