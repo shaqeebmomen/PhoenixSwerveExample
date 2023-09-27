@@ -4,10 +4,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.command.MovePathRamsete;
 import frc.robot.loops.DriveLoop;
 import frc.robot.subsystems.Drive;
 
@@ -25,6 +29,7 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   private RobotControl m_RobotControl;
   private DriveLoop mDrive;
+  Command auto;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -40,6 +45,7 @@ public class Robot extends TimedRobot {
     m_RobotControl = new RobotControl();
 
     mDrive = DriveLoop.getInstance();
+    mDrive.resetOdomFieldRelative(new Pose2d(2, 5, new Rotation2d()));
 
   }
 
@@ -83,6 +89,9 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_robotContainer.initAuto();
+    auto = new MovePathRamsete().withTimeout(15);
+
+    auto.schedule();
   }
 
   /** This function is called periodically during autonomous. */
@@ -92,6 +101,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    if (auto != null) {
+      auto.cancel();
+    }
     m_robotContainer.initTeleop();
   }
 

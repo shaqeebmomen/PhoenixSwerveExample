@@ -9,16 +9,20 @@
       "window": {
         "visible": false
       }
-    },
-    "Timing": {
-      "window": {
-        "visible": false
-      }
     }
   },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/Pigeon 2 (Pro) [1]": "Gyro",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [0]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [1]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [2]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [3]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [4]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [5]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [6]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [7]": "Motor Controller",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/Scheduler": "Scheduler"
     },
@@ -26,6 +30,17 @@
       "/SmartDashboard/Field": {
         "Robot": {
           "style": "Box/Image"
+        },
+        "Traj": {
+          "arrows": false,
+          "color": [
+            1.0,
+            0.0,
+            0.9411764144897461,
+            255.0
+          ],
+          "style": "Line",
+          "weight": 1.0
         },
         "Waypoints": {
           "arrows": false,
@@ -50,9 +65,6 @@
         "open": true
       },
       "SmartDashboard": {
-        "Field": {
-          "open": true
-        },
         "open": true
       }
     }
@@ -61,8 +73,5 @@
     "Connections": {
       "open": true
     }
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

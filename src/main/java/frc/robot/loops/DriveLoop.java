@@ -11,9 +11,11 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -22,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.LocationConstants.AllianceColour;
+import frc.robot.control.BigBirdRamsete;
 import frc.robot.subsystems.Drive;
 import frc.robot.util.OI;
 
@@ -33,10 +36,15 @@ public class DriveLoop extends SubsystemBase {
   private OI oi;
   private Drive mDrive;
   final Field2d field2d = new Field2d();
+  private BigBirdRamsete ramseteControl = new BigBirdRamsete();
+  private Rotation2d cmdFixedAngle = new Rotation2d();
+
+  private Pose2d currentPose = new Pose2d();
 
   public enum DriveStates {
     OPERATOR_CONTROL,
     POSE_TO_POSE,
+    RAMSETE,
     DISABLED
   }
 
@@ -72,6 +80,43 @@ public class DriveLoop extends SubsystemBase {
             .withVelocityX(commands[0])
             .withVelocityY(commands[1])
             .withRotationalRate(commands[2]);
+        break;
+
+      case RAMSETE:
+        ChassisSpeeds goalSpeeds = ramseteControl.getGoalSpeeds(currentPose); // Chassis speeds as dictated
+                                                                                    // by Ramsete
+        /*
+         * Keep in mind that the ramsete controller is for a uni-cycle model. In a
+         * swerve's case we cannot apply the vx, vy & omega directly, as our heading
+         * and doesnt help us track a path. This path follower doesnt actually control
+         * our
+         * swerve angle
+         * 
+         * Instead treat the chassis speeds like a polar vector,
+         * (unicycles have vy = 0 always so thats what enables this)
+         * vx -> radius (magnitude)
+         * omega -> angle
+         * 
+         * Once we have a polar vector we can convert to cartesian, and get a vx & vy
+         * that the swerve will move to
+         */
+        Translation2d velVector = new Translation2d(goalSpeeds.vxMetersPerSecond,
+            Rotation2d.fromDegrees(goalSpeeds.omegaRadiansPerSecond)); // Creating our polar vector
+
+        // The constructor automatically does the conversion to store cartesian
+        // components so we just need to use the getters
+        double vx = velVector.getX();
+        double vy = velVector.getY();
+
+        // Now we can send these new vx & vy commands
+        mDriveRequest = new SwerveRequest.FieldCentricFacingAngle()
+            .withIsOpenLoop(false)
+            .withVelocityX(vx)
+            .withVelocityY(vy)
+            .withTargetDirection(cmdFixedAngle);
+        SmartDashboard.putNumber("cmdVX", vx);
+        SmartDashboard.putNumber("cmdVY", vy);
+        SmartDashboard.putNumber("angleReq", cmdFixedAngle.getDegrees());
         break;
 
       default:
@@ -117,7 +162,29 @@ public class DriveLoop extends SubsystemBase {
 
   private void telemeterize(SwerveDriveState state) {
     field2d.setRobotPose(state.Pose);
-    field2d.getObject("Waypoints").setPoses(new Pose2d(0., 0.,new Rotation2d()), new Pose2d(5, 3, new Rotation2d()));
+    // field2d.getObject("Waypoints").setPoses(new Pose2d(0., 0., new Rotation2d()),
+    // new Pose2d(5, 3, new Rotation2d()));
+    field2d.getObject("Traj").setTrajectory(ramseteControl.getCurrentTrajectory());
+    SmartDashboard.putString("DriveState", mDriveState.toString());
+    currentPose = state.Pose;
+  }
+
+  public void updateTrajectory(String filename) {
+    Trajectory newTrajectory = ramseteControl.readTrajectory(filename);
+    ramseteControl.setTrajectory(newTrajectory);
+    ramseteControl.resetPath();
+  }
+
+  public void setFixedAngle(Rotation2d rot) {
+    cmdFixedAngle = rot;
+  }
+
+  public boolean atPathEnd() {
+    return ramseteControl.atPathEnd(currentPose);
+  }
+
+  public void resetOdomFieldRelative(Pose2d newPose) {
+    mDrive.seedFieldRelative(newPose);
   }
 
 }
