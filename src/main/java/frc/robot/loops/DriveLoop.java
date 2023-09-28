@@ -36,7 +36,7 @@ public class DriveLoop extends SubsystemBase {
   private OI oi;
   private Drive mDrive;
   final Field2d field2d = new Field2d();
-  private BigBirdRamsete ramseteControl = new BigBirdRamsete();
+  private BigBirdRamsete ramseteControl = new BigBirdRamsete(40,0.1);
   private Rotation2d cmdFixedAngle = new Rotation2d();
 
   private Pose2d currentPose = new Pose2d();
@@ -111,7 +111,7 @@ public class DriveLoop extends SubsystemBase {
 
         // Now we can send these new vx & vy commands
         mDriveRequest = new SwerveRequest.FieldCentricFacingAngle()
-            .withIsOpenLoop(false)
+            .withIsOpenLoop(true)
             .withVelocityX(vx)
             .withVelocityY(vy)
             .withTargetDirection(cmdFixedAngle);

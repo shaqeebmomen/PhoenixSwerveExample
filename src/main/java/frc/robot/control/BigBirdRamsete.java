@@ -44,6 +44,10 @@ public class BigBirdRamsete {
         timeSinceStart = 0;
     }
 
+    public BigBirdRamsete(double b, double zeta) {
+        this(new Trajectory(), b, zeta);
+    }
+
     public BigBirdRamsete() {
         setTrajectory(new Trajectory());
         ramseteController = new RamseteController();
