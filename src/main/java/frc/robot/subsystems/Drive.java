@@ -48,7 +48,7 @@ public class Drive extends SwerveDrivetrain {
   private static final boolean kSteerMotorReversed = false;
   private static final String kCANbusName = "";
   private static final boolean kInvertLeftSide = false;
-  private static final boolean kInvertRightSide = true;
+  private static final boolean kInvertRightSide = false;
 
   private static double kSteerInertia = 0.0001;
   private static double kDriveInertia = 0.001;
@@ -98,7 +98,7 @@ public class Drive extends SwerveDrivetrain {
       Units.inchesToMeters(DriveConstants.kBackRightYPosInches), kInvertRightSide);
 
   public Drive() {
-    super(DrivetrainConstants, FrontLeft,
+    super(DrivetrainConstants, 100, FrontLeft,
         FrontRight, BackLeft, BackRight);
   }
 

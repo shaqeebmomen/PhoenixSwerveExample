@@ -7,26 +7,31 @@ package frc.robot.command;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.constants.LocationConstants;
+import frc.robot.control.P2PTrajectory;
+import frc.robot.control.P2PWaypoint;
 import frc.robot.loops.DriveLoop;
 import frc.robot.loops.DriveLoop.DriveStates;
 
-public class MoveRamseteCommand extends CommandBase {
+public class MoveP2PCommand extends CommandBase {
 
   private DriveLoop drive;
+  private P2PTrajectory trajectory;
 
   /** Creates a new MovePathRamsete. */
-  public MoveRamseteCommand() {
+  public MoveP2PCommand() {
     drive = DriveLoop.getInstance();
+    trajectory = LocationConstants.testTrajectory;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
-    drive.updateTrajectory("paths/output/test.wpilib.json");
-    drive.setFixedAngle(new Rotation2d()); // Whatever end angle you want
-    drive.resetOdomFieldRelative(new Pose2d(drive.getTrajectory().getInitialPose().getTranslation(), new Rotation2d()));
-    drive.setState(DriveStates.RAMSETE);
+    drive.resetPathController();
+    drive.setCurrentTrajectory(trajectory);
+    drive.resetOdomFieldRelative(new Pose2d());
+    drive.setPathCruiseSpeed(2);
+    drive.setState(DriveStates.PATH_FOLLOW);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

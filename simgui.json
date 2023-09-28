@@ -31,6 +31,18 @@
         "Robot": {
           "style": "Box/Image"
         },
+        "Target": {
+          "arrows": false,
+          "color": [
+            0.9053758382797241,
+            0.9607843160629272,
+            0.018838906660676003,
+            255.0
+          ],
+          "length": 0.5,
+          "weight": 1.0,
+          "width": 0.5
+        },
         "Traj": {
           "arrows": false,
           "color": [
@@ -39,8 +51,10 @@
             0.9411764144897461,
             255.0
           ],
-          "style": "Line",
-          "weight": 1.0
+          "length": 0.10000000149011612,
+          "style": "Box/Image",
+          "weight": 1.0,
+          "width": 0.10000000149011612
         },
         "Waypoints": {
           "arrows": false,
@@ -51,23 +65,23 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/Scheduler": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
   "NetworkTables": {
-    "persistent": {
-      "Preferences": {
-        "open": true
-      }
+    "Persistent Values": {
+      "open": false
+    },
+    "Retained Values": {
+      "open": false
     },
     "transitory": {
-      "Shuffleboard": {
-        "open": true
-      },
       "SmartDashboard": {
-        "Field": {
-          "open": true
-        },
         "open": true
       }
     }
@@ -86,16 +100,16 @@
               "autoFit": true
             }
           ],
-          "height": 631,
+          "height": 758,
           "series": [
             {
               "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
+                0.4595630168914795,
+                0.06632065773010254,
+                0.9019607901573181,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/cmdVX"
+              "id": "NT:/SmartDashboard/cmdVY"
             },
             {
               "color": [
@@ -104,7 +118,57 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/cmdVY"
+              "id": "NT:/SmartDashboard/PoseY"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/TgtY"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <1>": {
+      "plots": [
+        {
+          "axis": [
+            {
+              "autoFit": true
+            }
+          ],
+          "height": 758,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/PoseX"
+            },
+            {
+              "color": [
+                0.970588207244873,
+                0.0,
+                0.37110716104507446,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/cmdVX"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/TgtX"
             }
           ]
         }

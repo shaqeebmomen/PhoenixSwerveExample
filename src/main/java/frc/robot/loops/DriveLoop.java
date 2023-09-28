@@ -18,9 +18,14 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.control.P2PPathController;
+import frc.robot.control.P2PTrajectory;
+import frc.robot.control.P2PWaypoint;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.LocationConstants.AllianceColour;
@@ -36,15 +41,21 @@ public class DriveLoop extends SubsystemBase {
   private OI oi;
   private Drive mDrive;
   final Field2d field2d = new Field2d();
-  private BigBirdRamsete ramseteControl = new BigBirdRamsete();
-  private Rotation2d cmdFixedAngle = new Rotation2d();
+
+  private ChassisSpeeds commandedSpeeds;
+
+  private double simLastTS;
+
+  // Pathing
+  private P2PPathController pathController;
+  private double pathCruiseSpeed;
 
   private Pose2d currentPose = new Pose2d();
 
   public enum DriveStates {
     OPERATOR_CONTROL,
     POSE_TO_POSE,
-    RAMSETE,
+    PATH_FOLLOW,
     DISABLED
   }
 
@@ -63,6 +74,16 @@ public class DriveLoop extends SubsystemBase {
     mDriveState = DriveStates.DISABLED;
     mDrive = new Drive();
     mDrive.registerTelemetry(this::telemeterize);
+
+    pathController = new P2PPathController(new P2PTrajectory(new P2PWaypoint[] { new P2PWaypoint(new Pose2d(), 0) }),
+        0.5,
+        0, 0, 0.05,
+        1, 0, 0, 1, 5, 5);
+
+    commandedSpeeds = new ChassisSpeeds(0, 0, 0);
+    if (Robot.isSimulation()) {
+      simLastTS = Timer.getFPGATimestamp();
+    }
   }
 
   public void setState(DriveStates state) {
@@ -72,52 +93,27 @@ public class DriveLoop extends SubsystemBase {
   @Override
   public void periodic() {
     telemInput();
+    telemeterizeSlow();
     switch (mDriveState) {
       case OPERATOR_CONTROL:
         double commands[] = computeOperatorCommands(oi.getMappedDriveLeftY(), oi.getMappedDriveLeftX(),
             oi.getDriveRightX());
+        commandedSpeeds = new ChassisSpeeds(commands[0], commands[1], commands[2]);
         mDriveRequest = new SwerveRequest.FieldCentric()
             .withIsOpenLoop(true)
-            .withVelocityX(commands[0])
-            .withVelocityY(commands[1])
-            .withRotationalRate(commands[2]);
+            .withVelocityX(commandedSpeeds.vxMetersPerSecond)
+            .withVelocityY(commandedSpeeds.vyMetersPerSecond)
+            .withRotationalRate(commandedSpeeds.omegaRadiansPerSecond);
         break;
 
-      case RAMSETE:
-        ChassisSpeeds goalSpeeds = ramseteControl.getGoalSpeeds(currentPose); // Chassis speeds as dictated
-                                                                              // by Ramsete
-        /*
-         * Keep in mind that the ramsete controller is for a uni-cycle model. In a
-         * swerve's case we cannot apply the vx, vy & omega directly, as our heading
-         * and doesnt help us track a path. This path follower doesnt actually control
-         * our
-         * swerve angle
-         * 
-         * Instead treat the chassis speeds like a polar vector,
-         * (unicycles have vy = 0 always so thats what enables this)
-         * vx -> radius (magnitude)
-         * omega -> angle
-         * 
-         * Once we have a polar vector we can convert to cartesian, and get a vx & vy
-         * that the swerve will move to
-         */
-        Translation2d velVector = new Translation2d(goalSpeeds.vxMetersPerSecond,
-            Rotation2d.fromDegrees(goalSpeeds.omegaRadiansPerSecond)); // Creating our polar vector
-
-        // The constructor automatically does the conversion to store cartesian
-        // components so we just need to use the getters
-        double vx = velVector.getX();
-        double vy = velVector.getY();
-
+      case PATH_FOLLOW:
+        commandedSpeeds = pathController.getGoalSpeeds(currentPose, pathCruiseSpeed);
         // Now we can send these new vx & vy commands
-        mDriveRequest = new SwerveRequest.FieldCentricFacingAngle()
-            .withIsOpenLoop(false)
-            .withVelocityX(vx)
-            .withVelocityY(vy)
-            .withTargetDirection(cmdFixedAngle);
-        SmartDashboard.putNumber("cmdVX", vx);
-        SmartDashboard.putNumber("cmdVY", vy);
-        SmartDashboard.putNumber("angleReq", cmdFixedAngle.getDegrees());
+        mDriveRequest = new SwerveRequest.FieldCentric()
+            .withIsOpenLoop(true)
+            .withVelocityX(commandedSpeeds.vxMetersPerSecond)
+            .withVelocityY(commandedSpeeds.vyMetersPerSecond)
+            .withRotationalRate(commandedSpeeds.omegaRadiansPerSecond);
         break;
 
       default:
@@ -131,7 +127,8 @@ public class DriveLoop extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    mDrive.updateSimState(0.02, 12);
+    mDrive.updateSimState(Timer.getFPGATimestamp() - simLastTS, 12);
+    simLastTS = Timer.getFPGATimestamp();
   }
 
   private double[] computeOperatorCommands(double vx, double vy, double omega) {
@@ -162,47 +159,60 @@ public class DriveLoop extends SubsystemBase {
   }
 
   private void telemeterize(SwerveDriveState state) {
-    field2d.setRobotPose(state.Pose);
-    // field2d.getObject("Waypoints").setPoses(new Pose2d(0., 0., new Rotation2d()),
-    // new Pose2d(5, 3, new Rotation2d()));
-    field2d.getObject("Traj").setTrajectory(ramseteControl.getCurrentTrajectory());
-    SmartDashboard.putString("DriveState", mDriveState.toString());
     currentPose = state.Pose;
   }
 
+  private void telemeterizeSlow() {
+    field2d.setRobotPose(currentPose);
+    field2d.getObject("Traj").setPoses(pathController.currentTrajectory.getPoses());
+    SmartDashboard.putString("DriveState", mDriveState.toString());
+    SmartDashboard.putNumber("PoseX", currentPose.getX());
+    SmartDashboard.putNumber("PoseY", currentPose.getY());
+
+    Pose2d targetPose = pathController.currentTrajectory.getCurrentWaypoint().getPose();
+    field2d.getObject("Target").setPose(targetPose);
+    SmartDashboard.putNumber("TgtX", targetPose.getX());
+    SmartDashboard.putNumber("TgtY", targetPose.getY());
+
+    SmartDashboard.putNumber("cmdVX", commandedSpeeds.vxMetersPerSecond);
+    SmartDashboard.putNumber("cmdVY", commandedSpeeds.vyMetersPerSecond);
+    SmartDashboard.putNumber("cmdOM", commandedSpeeds.omegaRadiansPerSecond);
+  }
+
   private void telemInput() {
-    double teleB = Preferences.getDouble("Ram_B", 2.0);
-    double teleZ = Preferences.getDouble("Ram_Zeta", 0.7);
-    if (teleB != ramseteControl.getB() || teleZ != ramseteControl.getZeta()) {
-      ramseteControl.setBZeta(teleB, teleZ);
-      System.out.println("Updated Ramsete");
-    }
   }
 
-  public void updateTrajectory(String filename) {
-    Trajectory newTrajectory = ramseteControl.readTrajectory(filename);
-    ramseteControl.setTrajectory(newTrajectory);
-    ramseteControl.resetPath();
+  public void resetPathController() {
+    pathController.reset();
   }
 
-  public Trajectory getTrajectory() {
-    return ramseteControl.getCurrentTrajectory();
+  /******* GETTTERS *******/
+
+  public P2PTrajectory getCurrentTrajectory() {
+    return pathController.currentTrajectory;
   }
 
-  public void setFixedAngle(Rotation2d rot) {
-    cmdFixedAngle = rot;
+  public double getPathCruiseSpeed() {
+    return pathCruiseSpeed;
   }
 
   public boolean atPathEnd() {
-    return ramseteControl.atPathEnd(currentPose);
+    return pathController.isSettled();
+  }
+
+  /****** SETTERS *******/
+
+  public void setCurrentTrajectory(P2PTrajectory currentTrajectory) {
+    pathController.setTrajectory(currentTrajectory);
+    resetPathController();
   }
 
   public void resetOdomFieldRelative(Pose2d newPose) {
     mDrive.seedFieldRelative(newPose);
   }
 
-  public void updateRamseteGains(double b, double zeta) {
-    ramseteControl.setBZeta(b, zeta);
+  public void setPathCruiseSpeed(double pathCruiseSpeed) {
+    this.pathCruiseSpeed = pathCruiseSpeed;
   }
 
 }
