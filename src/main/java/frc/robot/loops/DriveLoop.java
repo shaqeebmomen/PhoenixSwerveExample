@@ -36,7 +36,7 @@ public class DriveLoop extends SubsystemBase {
   private OI oi;
   private Drive mDrive;
   final Field2d field2d = new Field2d();
-  private BigBirdRamsete ramseteControl = new BigBirdRamsete(40,0.1);
+  private BigBirdRamsete ramseteControl = new BigBirdRamsete(200, 0.1);
   private Rotation2d cmdFixedAngle = new Rotation2d();
 
   private Pose2d currentPose = new Pose2d();
@@ -74,10 +74,12 @@ public class DriveLoop extends SubsystemBase {
     telemInput();
     switch (mDriveState) {
       case OPERATOR_CONTROL:
-        double commands[] = computeOperatorCommands(oi.getMappedDriveLeftY(), oi.getMappedDriveLeftX(),
+        double commands[] = computeOperatorCommands(
+            oi.getDriveLeftY(),
+            oi.getDriveLeftX(),
             oi.getDriveRightX());
         mDriveRequest = new SwerveRequest.FieldCentric()
-            .withIsOpenLoop(true)
+            .withIsOpenLoop(false)
             .withVelocityX(commands[0])
             .withVelocityY(commands[1])
             .withRotationalRate(commands[2]);
@@ -111,7 +113,7 @@ public class DriveLoop extends SubsystemBase {
 
         // Now we can send these new vx & vy commands
         mDriveRequest = new SwerveRequest.FieldCentricFacingAngle()
-            .withIsOpenLoop(true)
+            .withIsOpenLoop(false)
             .withVelocityX(vx)
             .withVelocityY(vy)
             .withTargetDirection(cmdFixedAngle);

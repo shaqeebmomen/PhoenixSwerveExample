@@ -2,7 +2,7 @@
   {
     "name": "/Preferences/Ram_B",
     "type": "double",
-    "value": 100.0,
+    "value": 200.0,
     "properties": {
       "persistent": true
     }
