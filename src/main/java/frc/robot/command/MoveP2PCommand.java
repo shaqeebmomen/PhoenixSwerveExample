@@ -30,7 +30,7 @@ public class MoveP2PCommand extends CommandBase {
     drive.resetPathController();
     drive.setCurrentTrajectory(trajectory);
     drive.resetOdomFieldRelative(new Pose2d());
-    drive.setPathCruiseSpeed(2);
+    drive.setPathCruiseSpeed(1);
     drive.setState(DriveStates.PATH_FOLLOW);
   }
 

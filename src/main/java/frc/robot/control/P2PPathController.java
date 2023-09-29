@@ -3,8 +3,10 @@ package frc.robot.control;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class P2PPathController {
     private PIDController pxController; // posiiton x controller
@@ -52,6 +54,9 @@ public class P2PPathController {
      */
     public ChassisSpeeds getGoalSpeeds(Pose2d currentPose, double velocitySetpoint) {
         setCurrentPose(currentPose);
+        if (inSetpointRadius()) {
+            currentTrajectory.nextWaypoint();
+        }
         if (currentTrajectory.isCurrentEndPoint()) {
             return PoseToPoseControl();
         } else {
@@ -82,13 +87,12 @@ public class P2PPathController {
      * @return chassis speeds using constant velocity
      */
     private ChassisSpeeds VelocityHeadingControl(double velocitySetpoint) {
-        // TODO maybe move this to the getGoalSpeeds calculations, this function might be doing too much
-        if (inSetpointRadius()) {
-            currentTrajectory.nextWaypoint();
-        }
 
         Pose2d targetPose = currentTrajectory.getCurrentWaypoint().getPose();
-        double targetAngle = getAngleToWaypoint();
+        // double targetAngle =
+        // targetPose.relativeTo(currentPose).getRotation().getDegrees();
+        double targetAngle = getRadToWaypoint();
+        SmartDashboard.putNumber("tgtAng", Math.toDegrees(targetAngle));
 
         double vy = vySlewLimiter.calculate(velocitySetpoint * Math.sin(targetAngle));
         double vx = vxSlewLimiter.calculate(velocitySetpoint * Math.cos(targetAngle));
@@ -106,9 +110,12 @@ public class P2PPathController {
      */
     private double getDistanceToWaypoint() {
         Pose2d waypoint = currentTrajectory.getCurrentWaypoint().getPose();
-        double dx = waypoint.getX() - currentPose.getX();
-        double dy = waypoint.getY() - currentPose.getY();
-        return Math.sqrt(dx * dx + dy * dy);
+        // double dx = waypoint.getX() - currentPose.getX();
+        // double dy = waypoint.getY() - currentPose.getY();
+        // return Math.sqrt(dx * dx + dy * dy);
+        double distance = waypoint.relativeTo(currentPose).getTranslation().getNorm();
+        SmartDashboard.putNumber("tgtDist", distance);
+        return distance;
     }
 
     /**
@@ -116,20 +123,24 @@ public class P2PPathController {
      * @return true when the robot meets the end condition
      */
     private boolean inSetpointRadius() {
-        return getDistanceToWaypoint() < currentTrajectory.getCurrentWaypoint().getEndRadius();
+        boolean inSetpoint = getDistanceToWaypoint() < currentTrajectory.getCurrentWaypoint().getEndRadius();
+        SmartDashboard.putNumber("tgtRad", currentTrajectory.getCurrentWaypoint().getEndRadius());
+        SmartDashboard.putBoolean("tgtReached", inSetpoint);
+        return inSetpoint;
     }
 
     /**
      * 
      * @return angular velocity for robot to get to the next waypoint
      */
-    private double getAngleToWaypoint() {
+    private double getRadToWaypoint() {
         Pose2d targetPose = currentTrajectory.getCurrentWaypoint().getPose();
 
-        double y = targetPose.getY() - currentPose.getY();
-        double x = targetPose.getX() - currentPose.getY();
-
-        double angleToWaypoint = Units.radiansToDegrees(Math.atan2(y, x));
+        // double y = targetPose.getY() - currentPose.getY();
+        // double x = targetPose.getX() - currentPose.getY();
+        Translation2d targetVect = targetPose.relativeTo(currentPose).getTranslation();
+        // double angleToWaypoint = Units.radiansToDegrees(Math.atan2(y, x));
+        double angleToWaypoint = Math.atan2(targetVect.getY(), targetVect.getX());
 
         return angleToWaypoint;
     }

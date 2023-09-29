@@ -76,7 +76,7 @@ public class DriveLoop extends SubsystemBase {
     mDrive.registerTelemetry(this::telemeterize);
 
     pathController = new P2PPathController(new P2PTrajectory(new P2PWaypoint[] { new P2PWaypoint(new Pose2d(), 0) }),
-        0.5,
+        1,
         0, 0, 0.05,
         1, 0, 0, 1, 5, 5);
 
@@ -96,21 +96,24 @@ public class DriveLoop extends SubsystemBase {
     telemeterizeSlow();
     switch (mDriveState) {
       case OPERATOR_CONTROL:
-        double commands[] = computeOperatorCommands(oi.getMappedDriveLeftY(), oi.getMappedDriveLeftX(),
+        double commands[] = computeOperatorCommands(
+            oi.getDriveLeftY(),
+            oi.getDriveLeftX(),
             oi.getDriveRightX());
         commandedSpeeds = new ChassisSpeeds(commands[0], commands[1], commands[2]);
         mDriveRequest = new SwerveRequest.FieldCentric()
-            .withIsOpenLoop(true)
+            .withIsOpenLoop(false)
             .withVelocityX(commandedSpeeds.vxMetersPerSecond)
             .withVelocityY(commandedSpeeds.vyMetersPerSecond)
             .withRotationalRate(commandedSpeeds.omegaRadiansPerSecond);
+
         break;
 
       case PATH_FOLLOW:
         commandedSpeeds = pathController.getGoalSpeeds(currentPose, pathCruiseSpeed);
         // Now we can send these new vx & vy commands
         mDriveRequest = new SwerveRequest.FieldCentric()
-            .withIsOpenLoop(true)
+            .withIsOpenLoop(false)
             .withVelocityX(commandedSpeeds.vxMetersPerSecond)
             .withVelocityY(commandedSpeeds.vyMetersPerSecond)
             .withRotationalRate(commandedSpeeds.omegaRadiansPerSecond);
@@ -146,14 +149,7 @@ public class DriveLoop extends SubsystemBase {
     cmdOmega = omega * DriveConstants.DRIVE_MAX_OMEGA
         * Preferences.getDouble("OPEN_LOOP_GAIN", 1);
 
-    SmartDashboard.putNumber("cmdVX", cmdX);
-    SmartDashboard.putNumber("cmdVY", cmdY);
-    SmartDashboard.putNumber("cmdOmega", cmdOmega);
-
     double[] ret = { cmdX, cmdY, cmdOmega };
-
-    SmartDashboard.putNumberArray("CMD Speeds", ret);
-
     return ret;
     // }
   }

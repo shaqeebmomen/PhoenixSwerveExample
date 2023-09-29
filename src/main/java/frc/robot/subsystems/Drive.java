@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.ArrayList;
@@ -24,8 +26,6 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstantsFactory;
 
 public class Drive extends SwerveDrivetrain {
 
-  static Drive mInstance = null;
-
   static class CustomSlotGains extends Slot0Configs {
     public CustomSlotGains(double kP, double kI, double kD, double kV, double kS) {
       this.kP = kP;
@@ -37,7 +37,7 @@ public class Drive extends SwerveDrivetrain {
   }
 
   private static final CustomSlotGains steerGains = new CustomSlotGains(50, 0, 0.05, 0, 0);
-  private static final CustomSlotGains driveGains = new CustomSlotGains(3, 0, 0, 0, 0);
+  private static final CustomSlotGains driveGains = new CustomSlotGains(0.0, 0, 0.0, 0.125, 0);
 
   private static final double kCoupleRatio = 0.0;
 
@@ -65,7 +65,7 @@ public class Drive extends SwerveDrivetrain {
       .withSlipCurrent(800)
       .withSteerMotorGains(steerGains)
       .withDriveMotorGains(driveGains)
-      .withSpeedAt12VoltsMps(6) // Theoretical free speed is 10 meters per second at 12v applied output
+      .withSpeedAt12VoltsMps(DriveConstants.MODULE_MAX_WHEEL_SPEED_M) // Theoretical free speed is 10 meters per second at 12v applied output
       .withSteerInertia(kSteerInertia)
       .withDriveInertia(kDriveInertia)
       // .withFeedbackSource(SwerveModuleSteerFeedbackType.FusedCANcoder)

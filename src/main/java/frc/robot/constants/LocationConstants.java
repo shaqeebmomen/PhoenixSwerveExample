@@ -14,8 +14,8 @@ public class LocationConstants {
 
     public static P2PTrajectory testTrajectory = new P2PTrajectory(new P2PWaypoint[] {
             // new P2PWaypoint(new Pose2d(0, 2, new Rotation2d()), 1),
-            new P2PWaypoint(new Pose2d(2, 1, new Rotation2d()), 0.1),
-            new P2PWaypoint(new Pose2d(5, 2, new Rotation2d()), 0.1),
+            new P2PWaypoint(new Pose2d(2, 2, new Rotation2d()), 0.1),
+            new P2PWaypoint(new Pose2d(8, 2, new Rotation2d()), 0.3),
             new P2PWaypoint(new Pose2d(2, 5, new Rotation2d()), 0)
     });
 

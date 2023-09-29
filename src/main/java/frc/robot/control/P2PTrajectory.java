@@ -26,7 +26,7 @@ public class P2PTrajectory {
      * change to next waypoint
      */
     public void nextWaypoint() {
-        if (waypointIndex + 1 < waypoints.length - 1) {
+        if (waypointIndex + 1 < waypoints.length) {
             waypointIndex++;
         }
     }
